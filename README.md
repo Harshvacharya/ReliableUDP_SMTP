@@ -1,10 +1,75 @@
-Reliable UDP
+# ReliableUDP_SMTP
 
-• Engineered a Go-Back-N protocol in C as a static library, utilizing a window-based flow control for reliable data transfer over UDP.
-• Implemented multi-user communication over server using concepts of threads, semaphores and shared memory, conducted
-extensive testing with a Bash suite, with diverse window sizes and packet loss rates to assess the protocol's performance.
+## Overview
+A two-part systems project implemented in C:
 
-SMTP
+1. **ReliableUDP** — a library and demo implementing **Go-Back-N**–style reliable data transfer over UDP (window-based flow control, loss handling).  
+2. **SMTP** — a concurrent, TCP-based **mail server and client** implementing core SMTP (RFC 5321) and POP3 (RFC 1939) workflows for sending and retrieving email.
 
-• Developed TCP-Based concurrent Mail Server and Client Using SMTP and POP3 Protocols, enabling efficient email sending and
-retrieval as per RFC 5321 and RFC 1939 standards, ensuring robust communication between multiple mail servers and clients.
+Repo layout:
+
+```
+ReliableUDP_SMTP/
+├─ ReliableUDP/   # Go-Back-N over UDP: library + test programs
+├─ SMTP/          # TCP-based SMTP/POP3 server & client
+└─ README.md
+```
+
+## ReliableUDP (Go-Back-N)
+### Highlights
+- Sliding window, sequence numbers, ACK/timeout logic.
+- Packet loss/duplication tolerance on top of UDP.
+- Suitable as a teaching/demo library for transport-layer reliability.
+
+### Build
+```bash
+cd ReliableUDP
+make
+```
+
+### Run (example workflow)
+```bash
+# in one terminal
+./server_demo <port>
+
+# in another terminal
+./client_demo <server_ip> <port> <file_to_send>
+```
+
+## SMTP (server & client)
+### Highlights
+- **SMTP server/client** for sending mail; **POP3** server/client for retrieval.
+- Concurrent server using threads.
+- Demonstrates protocol parsing, session state, and multi-user handling.
+
+### Build
+```bash
+cd SMTP
+make
+```
+
+### Run (example workflow)
+```bash
+# Start the SMTP server
+./smtp_server <listen_port>
+
+# Send mail with client
+./smtp_client <server_ip> <port>   --from alice@example.com   --to bob@example.com   --subject "Hello"   --data "Hi from ReliableUDP_SMTP!"
+
+# Start the POP3 server (if in repo) and fetch with a POP3 client
+./pop3_server <listen_port>
+./pop3_client <server_ip> <port> --user bob --pass secret
+```
+
+## Testing
+- The ReliableUDP component can be tested with different window sizes and simulated loss rates.  
+- SMTP/POP3 can be tested end-to-end by sending, storing, and retrieving messages with multiple clients.
+
+## Implementation Notes
+- **ReliableUDP:** timers for retransmission, cumulative ACKs, and sender window advancement.
+- **SMTP/POP3:** core command sets like `HELO`, `MAIL FROM`, `RCPT TO`, `DATA`, `USER`, `PASS`, `LIST`, `RETR`, etc.
+
+## Security & Environment
+- Designed for **local/demo environments**.  
+- Add TLS and stronger authentication if used on a real network.
+
